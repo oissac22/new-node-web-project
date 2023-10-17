@@ -51,6 +51,7 @@ import { App } from "./app";
 import { RequestError } from "./interfaces/RequestError";
 import { PORT } from "./config";
 import { Logs } from "./utils/Logs";
+import { HTTPError } from "./error/HTTPError";
 
 App.get("/", (req,res) => {
     res.send("Hello world!!!");
@@ -61,8 +62,13 @@ App.get("/error", (req,res) => {
 })
 
 App.use((err:RequestError, req:Request, res:Response, next:NextFunction) => {
+    if (err instanceof HTTPError) {
+        const code = err.status || 500;
+        res.status(code).send(`<b>${code}</b> - ` + err.message);
+        return;
+    }
     Logs.log(err.stack);
-    res.status(err.status || 500).send("<b>ERROR:</b> " + err.message);
+    res.status(err.status || 500).send("Erro interno do servidor.");
 })
 
 App.use((req:Request, res:Response, next:NextFunction) => {
@@ -95,6 +101,26 @@ App.use(express.json({
     limit: "1mb",
 }));
 '>index.ts
+
+cd ..
+
+mkdir error
+cd error
+echo 'import { RequestError } from "../interfaces/RequestError";
+
+export class HTTPError extends Error implements RequestError {
+    constructor(
+        msg:string,
+        private readonly _status:number = 500
+    ){
+        super(msg)
+    }
+
+    get status():number {
+        return this._status
+    }
+}
+'>HTTPError.ts
 
 cd ..
 
