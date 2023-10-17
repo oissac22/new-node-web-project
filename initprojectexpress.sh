@@ -158,3 +158,11 @@ perl -0777 -pi -e "s/\"scripts\": \{[^}]*\}/$replacetext/g" ./package.json
 echo
 echo execute:
 echo "npm run dev"
+
+rm -fr ./.git
+
+echo 'node_modules
+package-lock.json
+dist'>.gitignore
+
+git init
